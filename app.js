@@ -5,29 +5,60 @@
 'use strict';
 
 // ────────────────────────────────────────────────
+// 0. SUPABASE CONFIGURATION
+// ────────────────────────────────────────────────
+const supabaseUrl = 'https://hrauelgepfuyrdglginw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhyYXVlbGdlcGZ1eXJkZ2xnaW53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMjI1MjcsImV4cCI6MjA5NDY5ODUyN30.GfpJZBheX6Z5uI_dAwX82r1YTqoaLVzbonFgUjRiA6c';
+const supabaseClient = window.supabase?.createClient
+  ? window.supabase.createClient(supabaseUrl, supabaseKey)
+  : null;
+
+async function fetchPlayersFromSupabase() {
+  if (!supabaseClient) return;
+  try {
+    const { data, error } = await supabaseClient
+      .from('players')
+      .select('*')
+      .order('dorsal');
+    
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      players = data;
+      nextId = Math.max(...players.map(p => Number(p.id) || 0)) + 1;
+      saveToStorage();
+      renderPlayers();
+    }
+  } catch (err) {
+    console.error('Error al obtener jugadores de Supabase:', err);
+    showToast('⚠️ Cargados datos locales (sin conexión a Supabase)', 'error');
+  }
+}
+
+// ────────────────────────────────────────────────
 // 1. DATOS INICIALES — 20 jugadores
 // ────────────────────────────────────────────────
 const PLAYERS_DEFAULT = [
-  { id: 1,  nombre: 'Julen',    apellido: 'Agirrezabala',  dorsal: 1,  posicion: 'Portero',        edad: 23, nacionalidad: 'Española', goles: 0,  asistencias: 0, partidos: 28, estado: 'Activo'    },
-  { id: 2,  nombre: 'Unai',     apellido: 'Simón',         dorsal: 25, posicion: 'Portero',        edad: 27, nacionalidad: 'Española', goles: 0,  asistencias: 0, partidos: 12, estado: 'Activo'    },
-  { id: 3,  nombre: 'Dani',     apellido: 'Vivian',        dorsal: 3,  posicion: 'Defensa',        edad: 24, nacionalidad: 'Española', goles: 2,  asistencias: 1, partidos: 30, estado: 'Activo'    },
-  { id: 4,  nombre: 'Mikel',    apellido: 'Jauregizar',    dorsal: 4,  posicion: 'Defensa',        edad: 23, nacionalidad: 'Española', goles: 0,  asistencias: 2, partidos: 18, estado: 'Lesionado' },
-  { id: 5,  nombre: 'Yeray',    apellido: 'Álvarez',       dorsal: 14, posicion: 'Defensa',        edad: 29, nacionalidad: 'Española', goles: 1,  asistencias: 0, partidos: 25, estado: 'Activo'    },
-  { id: 6,  nombre: 'Lekue',    apellido: 'Iñigo',         dorsal: 17, posicion: 'Defensa',        edad: 30, nacionalidad: 'Española', goles: 1,  asistencias: 3, partidos: 22, estado: 'Activo'    },
-  { id: 7,  nombre: 'Oscar',    apellido: 'De Marcos',     dorsal: 18, posicion: 'Defensa',        edad: 34, nacionalidad: 'Española', goles: 2,  asistencias: 4, partidos: 20, estado: 'Activo'    },
-  { id: 8,  nombre: 'Unai',     apellido: 'Vencedor',      dorsal: 6,  posicion: 'Centrocampista', edad: 25, nacionalidad: 'Española', goles: 3,  asistencias: 5, partidos: 32, estado: 'Activo'    },
-  { id: 9,  nombre: 'Ander',    apellido: 'Herrera',       dorsal: 22, posicion: 'Centrocampista', edad: 35, nacionalidad: 'Española', goles: 2,  asistencias: 4, partidos: 19, estado: 'Activo'    },
-  { id: 10, nombre: 'Oier',     apellido: 'Zarraga',       dorsal: 24, posicion: 'Centrocampista', edad: 23, nacionalidad: 'Española', goles: 4,  asistencias: 6, partidos: 30, estado: 'Activo'    },
-  { id: 11, nombre: 'Mikel',    apellido: 'Vesga',         dorsal: 15, posicion: 'Centrocampista', edad: 30, nacionalidad: 'Española', goles: 3,  asistencias: 2, partidos: 28, estado: 'Sancionado'},
-  { id: 12, nombre: 'Dani',     apellido: 'García',        dorsal: 16, posicion: 'Centrocampista', edad: 32, nacionalidad: 'Española', goles: 1,  asistencias: 3, partidos: 24, estado: 'Activo'    },
-  { id: 13, nombre: 'Beñat',    apellido: 'Prados',        dorsal: 8,  posicion: 'Centrocampista', edad: 25, nacionalidad: 'Española', goles: 5,  asistencias: 7, partidos: 33, estado: 'Activo'    },
-  { id: 14, nombre: 'Nico',     apellido: 'Williams',      dorsal: 10, posicion: 'Delantero',      edad: 21, nacionalidad: 'Española', goles: 14, asistencias: 9, partidos: 34, estado: 'Activo'    },
-  { id: 15, nombre: 'Iñaki',    apellido: 'Williams',      dorsal: 9,  posicion: 'Delantero',      edad: 29, nacionalidad: 'Ghanesa',  goles: 12, asistencias: 8, partidos: 32, estado: 'Activo'    },
-  { id: 16, nombre: 'Gorka',    apellido: 'Guruzeta',      dorsal: 21, posicion: 'Delantero',      edad: 27, nacionalidad: 'Española', goles: 11, asistencias: 3, partidos: 28, estado: 'Activo'    },
-  { id: 17, nombre: 'Asier',    apellido: 'Villalibre',    dorsal: 19, posicion: 'Delantero',      edad: 27, nacionalidad: 'Española', goles: 8,  asistencias: 2, partidos: 26, estado: 'Activo'    },
-  { id: 18, nombre: 'Sancet',   apellido: 'Oihan',         dorsal: 20, posicion: 'Delantero',      edad: 24, nacionalidad: 'Española', goles: 9,  asistencias: 5, partidos: 31, estado: 'Lesionado' },
-  { id: 19, nombre: 'Jon',      apellido: 'Morcillo',      dorsal: 11, posicion: 'Delantero',      edad: 21, nacionalidad: 'Española', goles: 6,  asistencias: 4, partidos: 29, estado: 'Activo'    },
-  { id: 20, nombre: 'Yuri',     apellido: 'Berchiche',     dorsal: 5,  posicion: 'Defensa',        edad: 34, nacionalidad: 'Española', goles: 1,  asistencias: 5, partidos: 21, estado: 'Activo'    },
+  { id: 1,  nombre: 'Julen',    apellido: 'Agirrezabala',  dorsal: 1,  posicion: 'Portero',        edad: 23, nacionalidad: 'Española', goles: 0,  asistencias: 0, partidos: 28, estado: 'Activo',     talla: 'L',  val: 4 },
+  { id: 2,  nombre: 'Unai',     apellido: 'Simón',         dorsal: 25, posicion: 'Portero',        edad: 27, nacionalidad: 'Española', goles: 0,  asistencias: 0, partidos: 12, estado: 'Activo',     talla: 'XL', val: 5 },
+  { id: 3,  nombre: 'Dani',     apellido: 'Vivian',        dorsal: 3,  posicion: 'Defensa',        edad: 24, nacionalidad: 'Española', goles: 2,  asistencias: 1, partidos: 30, estado: 'Activo',     talla: 'M',  val: 5 },
+  { id: 4,  nombre: 'Mikel',    apellido: 'Jauregizar',    dorsal: 4,  posicion: 'Defensa',        edad: 23, nacionalidad: 'Española', goles: 0,  asistencias: 2, partidos: 18, estado: 'Lesionado',  talla: 'M',  val: 3 },
+  { id: 5,  nombre: 'Yeray',    apellido: 'Álvarez',       dorsal: 14, posicion: 'Defensa',        edad: 29, nacionalidad: 'Española', goles: 1,  asistencias: 0, partidos: 25, estado: 'Activo',     talla: 'L',  val: 4 },
+  { id: 6,  nombre: 'Lekue',    apellido: 'Iñigo',         dorsal: 17, posicion: 'Defensa',        edad: 30, nacionalidad: 'Española', goles: 1,  asistencias: 3, partidos: 22, estado: 'Activo',     talla: 'M',  val: 3 },
+  { id: 7,  nombre: 'Oscar',    apellido: 'De Marcos',     dorsal: 18, posicion: 'Defensa',        edad: 34, nacionalidad: 'Española', goles: 2,  asistencias: 4, partidos: 20, estado: 'Activo',     talla: 'L',  val: 4 },
+  { id: 8,  nombre: 'Unai',     apellido: 'Vencedor',      dorsal: 6,  posicion: 'Centrocampista', edad: 25, nacionalidad: 'Española', goles: 3,  asistencias: 5, partidos: 32, estado: 'Activo',     talla: 'M',  val: 4 },
+  { id: 9,  nombre: 'Ander',    apellido: 'Herrera',       dorsal: 22, posicion: 'Centrocampista', edad: 35, nacionalidad: 'Española', goles: 2,  asistencias: 4, partidos: 19, estado: 'Activo',     talla: 'M',  val: 4 },
+  { id: 10, nombre: 'Oier',     apellido: 'Zarraga',       dorsal: 24, posicion: 'Centrocampista', edad: 23, nacionalidad: 'Española', goles: 4,  asistencias: 6, partidos: 30, estado: 'Activo',     talla: 'S',  val: 3 },
+  { id: 11, nombre: 'Mikel',    apellido: 'Vesga',         dorsal: 15, posicion: 'Centrocampista', edad: 30, nacionalidad: 'Española', goles: 3,  asistencias: 2, partidos: 28, estado: 'Sancionado', talla: 'L',  val: 3 },
+  { id: 12, nombre: 'Dani',     apellido: 'García',        dorsal: 16, posicion: 'Centrocampista', edad: 32, nacionalidad: 'Española', goles: 1,  asistencias: 3, partidos: 24, estado: 'Activo',     talla: 'L',  val: 3 },
+  { id: 13, nombre: 'Beñat',    apellido: 'Prados',        dorsal: 8,  posicion: 'Centrocampista', edad: 25, nacionalidad: 'Española', goles: 5,  asistencias: 7, partidos: 33, estado: 'Activo',     talla: 'M',  val: 4 },
+  { id: 14, nombre: 'Nico',     apellido: 'Williams',      dorsal: 10, posicion: 'Delantero',      edad: 21, nacionalidad: 'Española', goles: 14, asistencias: 9, partidos: 34, estado: 'Activo',     talla: 'M',  val: 5 },
+  { id: 15, nombre: 'Iñaki',    apellido: 'Williams',      dorsal: 9,  posicion: 'Delantero',      edad: 29, nacionalidad: 'Ghanesa',  goles: 12, asistencias: 8, partidos: 32, estado: 'Activo',     talla: 'XL', val: 5 },
+  { id: 16, nombre: 'Gorka',    apellido: 'Guruzeta',      dorsal: 21, posicion: 'Delantero',      edad: 27, nacionalidad: 'Española', goles: 11, asistencias: 3, partidos: 28, estado: 'Activo',     talla: 'L',  val: 4 },
+  { id: 17, nombre: 'Asier',    apellido: 'Villalibre',    dorsal: 19, posicion: 'Delantero',      edad: 27, nacionalidad: 'Española', goles: 8,  asistencias: 2, partidos: 26, estado: 'Activo',     talla: 'XL', val: 4 },
+  { id: 18, nombre: 'Sancet',   apellido: 'Oihan',         dorsal: 20, posicion: 'Delantero',      edad: 24, nacionalidad: 'Española', goles: 9,  asistencias: 5, partidos: 31, estado: 'Lesionado',  talla: 'L',  val: 5 },
+  { id: 19, nombre: 'Jon',      apellido: 'Morcillo',      dorsal: 11, posicion: 'Delantero',      edad: 21, nacionalidad: 'Española', goles: 6,  asistencias: 4, partidos: 29, estado: 'Activo',     talla: 'M',  val: 3 },
+  { id: 20, nombre: 'Yuri',     apellido: 'Berchiche',     dorsal: 5,  posicion: 'Defensa',        edad: 34, nacionalidad: 'Española', goles: 1,  asistencias: 5, partidos: 21, estado: 'Activo',     talla: 'L',  val: 4 },
 ];
 
 // ────────────────────────────────────────────────
@@ -107,6 +138,7 @@ function getFilteredSorted() {
       case 'nombre':  return (a.nombre + a.apellido).localeCompare(b.nombre + b.apellido);
       case 'goles':   return b.goles - a.goles;
       case 'edad':    return a.edad - b.edad;
+      case 'val':     return (b.val || 5) - (a.val || 5);
       default:        return a.dorsal - b.dorsal; // dorsal
     }
   });
@@ -152,6 +184,7 @@ function renderPlayers() {
         <div class="card-meta">
           <span class="badge-posicion ${getBadgePosClass(p.posicion)}">${p.posicion}</span>
           <span class="badge-estado estado-${p.estado}">${p.estado}</span>
+          <span class="badge-val">⭐ ${p.val || 5}</span>
         </div>
         <div class="card-stats">
           <div class="cs-item"><span class="cs-num">${p.goles}</span><span class="cs-label">Goles</span></div>
@@ -205,6 +238,7 @@ function openAdd() {
   modalTitle.textContent = 'Nuevo Jugador';
   playerForm.reset();
   document.getElementById('player-id').value = '';
+  document.getElementById('f-val').value = '5';
   document.getElementById('f-estado-activo').checked = true;
   avatarPreview.textContent = '?';
   avatarPreview.style.background = 'linear-gradient(135deg, var(--green), #00a866)';
@@ -224,9 +258,11 @@ function openEdit(id) {
   document.getElementById('f-posicion').value  = p.posicion;
   document.getElementById('f-edad').value      = p.edad || '';
   document.getElementById('f-nacionalidad').value = p.nacionalidad || '';
+  document.getElementById('f-talla').value     = p.talla || '';
   document.getElementById('f-goles').value     = p.goles || 0;
   document.getElementById('f-asistencias').value = p.asistencias || 0;
   document.getElementById('f-partidos').value  = p.partidos || 0;
+  document.getElementById('f-val').value       = p.val || 5;
   document.querySelector(`input[name="estado"][value="${p.estado}"]`).checked = true;
   updateAvatarPreview(p.nombre, p.posicion);
   clearErrors();
@@ -276,6 +312,7 @@ playerForm.addEventListener('submit', e => {
   e.preventDefault();
   if (!validateForm()) { showToast('Completa los campos obligatorios', 'error'); return; }
 
+  const isNew = !editingId;
   const player = {
     id:           editingId || nextId++,
     nombre:       document.getElementById('f-nombre').value.trim(),
@@ -284,10 +321,12 @@ playerForm.addEventListener('submit', e => {
     posicion:     document.getElementById('f-posicion').value,
     edad:         Number(document.getElementById('f-edad').value) || null,
     nacionalidad: document.getElementById('f-nacionalidad').value.trim() || '—',
+    talla:        document.getElementById('f-talla').value.trim() || '—',
     goles:        Number(document.getElementById('f-goles').value) || 0,
     asistencias:  Number(document.getElementById('f-asistencias').value) || 0,
     partidos:     Number(document.getElementById('f-partidos').value) || 0,
     estado:       document.querySelector('input[name="estado"]:checked').value,
+    val:          Number(document.getElementById('f-val').value) || 5,
   };
 
   if (editingId) {
@@ -302,6 +341,63 @@ playerForm.addEventListener('submit', e => {
   saveToStorage();
   renderPlayers();
   closeModal(modalOverlay);
+
+  // Sincronizar en segundo plano con Supabase
+  if (supabaseClient) {
+    if (isNew) {
+      supabaseClient
+        .from('players')
+        .insert({
+          id:           player.id,
+          nombre:       player.nombre,
+          apellido:     player.apellido,
+          dorsal:       player.dorsal,
+          posicion:     player.posicion,
+          edad:         player.edad,
+          nacionalidad: player.nacionalidad,
+          talla:        player.talla,
+          goles:        player.goles,
+          asistencias:  player.asistencias,
+          partidos:     player.partidos,
+          estado:       player.estado,
+          val:          player.val
+        })
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error al guardar en Supabase:', error);
+            showToast('⚠️ Error al sincronizar con Supabase', 'error');
+          } else {
+            showToast('✅ Sincronizado con Supabase', 'success');
+          }
+        });
+    } else {
+      supabaseClient
+        .from('players')
+        .update({
+          nombre:       player.nombre,
+          apellido:     player.apellido,
+          dorsal:       player.dorsal,
+          posicion:     player.posicion,
+          edad:         player.edad,
+          nacionalidad: player.nacionalidad,
+          talla:        player.talla,
+          goles:        player.goles,
+          asistencias:  player.asistencias,
+          partidos:     player.partidos,
+          estado:       player.estado,
+          val:          player.val
+        })
+        .eq('id', player.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error al actualizar en Supabase:', error);
+            showToast('⚠️ Error al sincronizar con Supabase', 'error');
+          } else {
+            showToast('✅ Cambios guardados en Supabase', 'success');
+          }
+        });
+    }
+  }
 });
 
 // ────────────────────────────────────────────────
@@ -311,10 +407,27 @@ function deletePlayer(id) {
   const p = players.find(x => x.id === id);
   if (!p) return;
   if (!confirm(`¿Eliminar a ${p.nombre} ${p.apellido}?`)) return;
+  
   players = players.filter(x => x.id !== id);
   saveToStorage();
   renderPlayers();
   showToast('🗑️ Jugador eliminado');
+
+  // Eliminar en Supabase
+  if (supabaseClient) {
+    supabaseClient
+      .from('players')
+      .delete()
+      .eq('id', id)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error al eliminar en Supabase:', error);
+          showToast('⚠️ Error al eliminar en Supabase', 'error');
+        } else {
+          showToast('🗑️ Eliminado de Supabase', 'success');
+        }
+      });
+  }
 }
 
 // ────────────────────────────────────────────────
@@ -343,6 +456,9 @@ function openDetail(id) {
       <div class="detail-badges">
         <span class="badge-posicion ${getBadgePosClass(p.posicion)}">${p.posicion}</span>
         <span class="badge-estado estado-${p.estado}">${p.estado}</span>
+        <span class="badge-val" style="background: rgba(255, 200, 66, 0.2); color: var(--yellow); font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+          ${'★'.repeat(p.val || 5)}${'☆'.repeat(5 - (p.val || 5))}
+        </span>
       </div>
       <div class="detail-info-grid">
         <div class="detail-info-item">
@@ -360,6 +476,14 @@ function openDetail(id) {
         <div class="detail-info-item">
           <div class="label">Estado</div>
           <div class="value">${p.estado}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="label">Talla</div>
+          <div class="value">${p.talla || '—'}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="label">Ficha ID</div>
+          <div class="value">#${p.id}</div>
         </div>
       </div>
       <div class="detail-stats-row">
@@ -453,4 +577,7 @@ function showToast(msg, type = '') {
   loadFromStorage();
   renderPlayers();
   updateHeaderStats();
+  if (supabaseClient) {
+    fetchPlayersFromSupabase();
+  }
 })();

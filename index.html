@@ -63,6 +63,7 @@
         <option value="nombre">Ordenar: Nombre</option>
         <option value="goles">Ordenar: Goles</option>
         <option value="edad">Ordenar: Edad</option>
+        <option value="val">Ordenar: Valoración</option>
       </select>
     </div>
   </section>
@@ -128,7 +129,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row three-cols">
           <div class="form-group">
             <label for="f-edad">Edad</label>
             <input type="number" id="f-edad" min="15" max="45" placeholder="25" />
@@ -136,6 +137,10 @@
           <div class="form-group">
             <label for="f-nacionalidad">Nacionalidad</label>
             <input type="text" id="f-nacionalidad" placeholder="Española" />
+          </div>
+          <div class="form-group">
+            <label for="f-talla">Talla</label>
+            <input type="text" id="f-talla" placeholder="Ej: M, L, 42" />
           </div>
         </div>
 
@@ -151,6 +156,19 @@
           <div class="form-group">
             <label for="f-partidos">Partidos</label>
             <input type="number" id="f-partidos" min="0" value="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-val">Valoración *</label>
+            <select id="f-val" required>
+              <option value="5" selected>⭐⭐⭐⭐⭐ (5 - Excelente)</option>
+              <option value="4">⭐⭐⭐⭐ (4 - Bueno)</option>
+              <option value="3">⭐⭐⭐ (3 - Regular)</option>
+              <option value="2">⭐⭐ (2 - Bajo)</option>
+              <option value="1">⭐ (1 - Muy Bajo)</option>
+            </select>
           </div>
         </div>
 
@@ -198,6 +216,7 @@
   <!-- ========== TOAST ========== -->
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>
