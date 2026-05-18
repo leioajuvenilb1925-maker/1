@@ -70,6 +70,7 @@ let activeFilter = 'all';
 let searchQuery  = '';
 let sortBy       = 'dorsal';
 let editingId    = null;
+let tempFotoUrl  = null;
 
 // ────────────────────────────────────────────────
 // 3. STORAGE
@@ -174,10 +175,14 @@ function renderPlayers() {
     card.style.animationDelay = `${idx * 40}ms`;
     card.dataset.id = p.id;
 
+    const avatarContent = p.foto 
+      ? `<img src="${p.foto}" alt="${p.nombre}" class="avatar-img" />`
+      : getInitials(p.nombre, p.apellido);
+
     card.innerHTML = `
       <div class="card-top ${getPositionClass(p.posicion)}">
         <div class="card-dorsal">${p.dorsal}</div>
-        <div class="card-avatar ${getPositionClass(p.posicion)}">${getInitials(p.nombre, p.apellido)}</div>
+        <div class="card-avatar ${getPositionClass(p.posicion)}" style="${p.foto ? 'background: var(--surface-2);' : ''}">${avatarContent}</div>
       </div>
       <div class="card-body">
         <div class="card-name">${p.nombre} ${p.apellido}</div>
@@ -233,11 +238,41 @@ const playerForm   = document.getElementById('player-form');
 const modalTitle   = document.getElementById('modal-title');
 const avatarPreview= document.getElementById('avatar-preview');
 
+async function uploadPhotoToSupabase(playerId, file) {
+  if (!supabaseClient) return null;
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${playerId}-${Date.now()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    const { data, error } = await supabaseClient.storage
+      .from('player-photos')
+      .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+    if (error) {
+      console.warn('Supabase Storage bucket upload warning:', error);
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabaseClient.storage
+      .from('player-photos')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (err) {
+    console.error('Error in uploadPhotoToSupabase:', err);
+    return null;
+  }
+}
+
 function openAdd() {
   editingId = null;
   modalTitle.textContent = 'Nuevo Jugador';
   playerForm.reset();
   document.getElementById('player-id').value = '';
+  document.getElementById('f-foto').value = '';
+  document.getElementById('f-foto-file').value = '';
+  tempFotoUrl = null;
   document.getElementById('f-val').value = '5';
   document.getElementById('f-estado-activo').checked = true;
   avatarPreview.textContent = '?';
@@ -263,8 +298,11 @@ function openEdit(id) {
   document.getElementById('f-asistencias').value = p.asistencias || 0;
   document.getElementById('f-partidos').value  = p.partidos || 0;
   document.getElementById('f-val').value       = p.val || 5;
+  document.getElementById('f-foto').value      = p.foto || '';
+  document.getElementById('f-foto-file').value = '';
+  tempFotoUrl = p.foto || null;
   document.querySelector(`input[name="estado"][value="${p.estado}"]`).checked = true;
-  updateAvatarPreview(p.nombre, p.posicion);
+  updateAvatarPreview(p.nombre, p.posicion, p.foto);
   clearErrors();
   openModal(modalOverlay);
 }
@@ -284,7 +322,7 @@ function validateForm() {
   return valid;
 }
 
-function updateAvatarPreview(nombre, posicion) {
+function updateAvatarPreview(nombre, posicion, fotoUrl) {
   const initial = nombre ? nombre[0].toUpperCase() : '?';
   const colors = {
     'Portero':        'linear-gradient(135deg, #6366f1, #4f46e5)',
@@ -292,29 +330,78 @@ function updateAvatarPreview(nombre, posicion) {
     'Centrocampista': 'linear-gradient(135deg, #f59e0b, #d97706)',
     'Delantero':      'linear-gradient(135deg, #ef4444, #b91c1c)',
   };
-  avatarPreview.textContent = initial;
-  avatarPreview.style.background = colors[posicion] || 'linear-gradient(135deg, var(--green), #00a866)';
+  if (fotoUrl) {
+    avatarPreview.innerHTML = `<img src="${fotoUrl}" alt="Preview" class="avatar-img" />`;
+    avatarPreview.style.background = 'none';
+  } else {
+    avatarPreview.innerHTML = initial;
+    avatarPreview.style.background = colors[posicion] || 'linear-gradient(135deg, var(--green), #00a866)';
+  }
 }
 
 // Live avatar preview
 document.getElementById('f-nombre').addEventListener('input', () => {
   const nombre   = document.getElementById('f-nombre').value;
   const posicion = document.getElementById('f-posicion').value;
-  updateAvatarPreview(nombre, posicion);
+  updateAvatarPreview(nombre, posicion, tempFotoUrl);
 });
 document.getElementById('f-posicion').addEventListener('change', () => {
   const nombre   = document.getElementById('f-nombre').value;
   const posicion = document.getElementById('f-posicion').value;
-  updateAvatarPreview(nombre, posicion);
+  updateAvatarPreview(nombre, posicion, tempFotoUrl);
 });
 
-playerForm.addEventListener('submit', e => {
+// Photo inputs listeners
+document.getElementById('f-foto-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) {
+    if (file.size > 1024 * 1024) {
+      showToast('⚠️ Imagen grande. Se guardará, pero se recomienda < 1MB', 'warning');
+    }
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      tempFotoUrl = evt.target.result;
+      document.getElementById('f-foto').value = ''; // Clear URL text if user uploads a file
+      const nombre = document.getElementById('f-nombre').value;
+      const posicion = document.getElementById('f-posicion').value;
+      updateAvatarPreview(nombre, posicion, tempFotoUrl);
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+document.getElementById('f-foto').addEventListener('input', e => {
+  tempFotoUrl = e.target.value.trim() || null;
+  const nombre = document.getElementById('f-nombre').value;
+  const posicion = document.getElementById('f-posicion').value;
+  updateAvatarPreview(nombre, posicion, tempFotoUrl);
+});
+
+playerForm.addEventListener('submit', async e => {
   e.preventDefault();
   if (!validateForm()) { showToast('Completa los campos obligatorios', 'error'); return; }
 
   const isNew = !editingId;
+  const id = editingId || nextId++;
+
+  const fileInput = document.getElementById('f-foto-file');
+  const file = fileInput.files[0];
+  let finalFotoUrl = tempFotoUrl;
+
+  // If there's a file selected and we are connected to Supabase, try uploading it to Storage
+  if (file && supabaseClient) {
+    showToast('📤 Subiendo imagen a Storage...', 'info');
+    const uploadedUrl = await uploadPhotoToSupabase(id, file);
+    if (uploadedUrl) {
+      finalFotoUrl = uploadedUrl;
+      showToast('✅ Imagen subida a Storage', 'success');
+    } else {
+      showToast('⚠️ Usando almacenamiento en base de datos para la foto', 'warning');
+    }
+  }
+
   const player = {
-    id:           editingId || nextId++,
+    id:           id,
     nombre:       document.getElementById('f-nombre').value.trim(),
     apellido:     document.getElementById('f-apellido').value.trim(),
     dorsal:       Number(document.getElementById('f-dorsal').value),
@@ -327,6 +414,7 @@ playerForm.addEventListener('submit', e => {
     partidos:     Number(document.getElementById('f-partidos').value) || 0,
     estado:       document.querySelector('input[name="estado"]:checked').value,
     val:          Number(document.getElementById('f-val').value) || 5,
+    foto:         finalFotoUrl || null
   };
 
   if (editingId) {
@@ -344,24 +432,27 @@ playerForm.addEventListener('submit', e => {
 
   // Sincronizar en segundo plano con Supabase
   if (supabaseClient) {
+    const dbPayload = {
+      nombre:       player.nombre,
+      apellido:     player.apellido,
+      dorsal:       player.dorsal,
+      posicion:     player.posicion,
+      edad:         player.edad,
+      nacionalidad: player.nacionalidad,
+      talla:        player.talla,
+      goles:        player.goles,
+      asistencias:  player.asistencias,
+      partidos:     player.partidos,
+      estado:       player.estado,
+      val:          player.val,
+      foto:         player.foto
+    };
+
     if (isNew) {
+      dbPayload.id = player.id;
       supabaseClient
         .from('players')
-        .insert({
-          id:           player.id,
-          nombre:       player.nombre,
-          apellido:     player.apellido,
-          dorsal:       player.dorsal,
-          posicion:     player.posicion,
-          edad:         player.edad,
-          nacionalidad: player.nacionalidad,
-          talla:        player.talla,
-          goles:        player.goles,
-          asistencias:  player.asistencias,
-          partidos:     player.partidos,
-          estado:       player.estado,
-          val:          player.val
-        })
+        .insert(dbPayload)
         .then(({ error }) => {
           if (error) {
             console.error('Error al guardar en Supabase:', error);
@@ -373,20 +464,7 @@ playerForm.addEventListener('submit', e => {
     } else {
       supabaseClient
         .from('players')
-        .update({
-          nombre:       player.nombre,
-          apellido:     player.apellido,
-          dorsal:       player.dorsal,
-          posicion:     player.posicion,
-          edad:         player.edad,
-          nacionalidad: player.nacionalidad,
-          talla:        player.talla,
-          goles:        player.goles,
-          asistencias:  player.asistencias,
-          partidos:     player.partidos,
-          estado:       player.estado,
-          val:          player.val
-        })
+        .update(dbPayload)
         .eq('id', player.id)
         .then(({ error }) => {
           if (error) {
@@ -446,9 +524,13 @@ function openDetail(id) {
     'Delantero':      'linear-gradient(135deg, #ef4444, #b91c1c)',
   };
 
+  const detailAvatarContent = p.foto 
+    ? `<img src="${p.foto}" alt="${p.nombre}" class="avatar-img" />`
+    : getInitials(p.nombre, p.apellido);
+
   document.getElementById('detail-body').innerHTML = `
     <div class="detail-hero ${getPositionClass(p.posicion)}">
-      <div class="detail-avatar ${getPositionClass(p.posicion)}">${getInitials(p.nombre, p.apellido)}</div>
+      <div class="detail-avatar ${getPositionClass(p.posicion)}" style="${p.foto ? 'background: var(--surface-2);' : ''}">${detailAvatarContent}</div>
       <div class="detail-num">${p.dorsal}</div>
     </div>
     <div class="detail-body">
