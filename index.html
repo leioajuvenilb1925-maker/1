@@ -96,8 +96,15 @@
         <div class="avatar-picker">
           <div class="avatar-preview" id="avatar-preview">?</div>
           <div class="avatar-info">
-            <span>Foto de perfil (inicial)</span>
-            <small>Se genera automáticamente</small>
+            <span>Foto del Jugador</span>
+            <small>Sube un archivo de imagen o introduce una URL</small>
+            <div class="avatar-upload-inputs">
+              <label for="f-foto-file" class="btn-upload-file">
+                📁 Subir foto
+              </label>
+              <input type="file" id="f-foto-file" accept="image/*" />
+              <input type="text" id="f-foto" placeholder="O pega URL de la imagen..." />
+            </div>
           </div>
         </div>
 
