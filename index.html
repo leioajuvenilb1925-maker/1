@@ -20,26 +20,34 @@
         <div class="logo-ball">⚽</div>
         <div class="logo-text">
           <h1>Football Manager</h1>
-          <span>Athletic Team · Temporada 2025/26</span>
+          <span id="logo-subtitle" data-i18n="logo-subtitle">Athletic Team · Temporada 2025/26</span>
         </div>
       </div>
+      
+      <!-- ========== LANGUAGE SWITCHER ========== -->
+      <div class="lang-switcher">
+        <button class="btn-lang" data-lang="es">ES</button>
+        <button class="btn-lang" data-lang="eu">EU</button>
+        <button class="btn-lang" data-lang="en">EN</button>
+      </div>
+
       <div class="header-stats">
         <div class="stat-pill" id="total-players">
           <span class="stat-num" id="stat-total">0</span>
-          <span class="stat-label">Jugadores</span>
+          <span class="stat-label" data-i18n="stat-players">Jugadores</span>
         </div>
         <div class="stat-pill">
           <span class="stat-num" id="stat-activos">0</span>
-          <span class="stat-label">Activos</span>
+          <span class="stat-label" data-i18n="stat-active">Activos</span>
         </div>
         <div class="stat-pill">
           <span class="stat-num" id="stat-goles">0</span>
-          <span class="stat-label">Goles</span>
+          <span class="stat-label" data-i18n="stat-goals">Goles</span>
         </div>
       </div>
       <button class="btn-add" id="btn-add-player">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Añadir Jugador
+        <span data-i18n="btn-add">Añadir Jugador</span>
       </button>
     </div>
   </header>
@@ -51,19 +59,19 @@
       <input type="text" id="search-input" placeholder="Buscar jugador…" autocomplete="off" />
     </div>
     <div class="filter-chips">
-      <button class="chip active" data-filter="all" id="filter-all">Todos</button>
-      <button class="chip" data-filter="Portero" id="filter-portero">Portero</button>
-      <button class="chip" data-filter="Defensa" id="filter-defensa">Defensa</button>
-      <button class="chip" data-filter="Centrocampista" id="filter-centrocampista">Centrocampista</button>
-      <button class="chip" data-filter="Delantero" id="filter-delantero">Delantero</button>
+      <button class="chip active" data-filter="all" id="filter-all" data-i18n="filter-all">Todos</button>
+      <button class="chip" data-filter="Portero" id="filter-portero" data-i18n="filter-portero">Portero</button>
+      <button class="chip" data-filter="Defensa" id="filter-defensa" data-i18n="filter-defensa">Defensa</button>
+      <button class="chip" data-filter="Centrocampista" id="filter-centrocampista" data-i18n="filter-centrocampista">Centrocampista</button>
+      <button class="chip" data-filter="Delantero" id="filter-delantero" data-i18n="filter-delantero">Delantero</button>
     </div>
     <div class="sort-wrap">
       <select id="sort-select">
-        <option value="dorsal">Ordenar: Dorsal</option>
-        <option value="nombre">Ordenar: Nombre</option>
-        <option value="goles">Ordenar: Goles</option>
-        <option value="edad">Ordenar: Edad</option>
-        <option value="val">Ordenar: Valoración</option>
+        <option value="dorsal" data-i18n="sort-dorsal">Ordenar: Dorsal</option>
+        <option value="nombre" data-i18n="sort-nombre">Ordenar: Nombre</option>
+        <option value="goles" data-i18n="sort-goles">Ordenar: Goles</option>
+        <option value="edad" data-i18n="sort-edad">Ordenar: Edad</option>
+        <option value="val" data-i18n="sort-val">Ordenar: Valoración</option>
       </select>
     </div>
   </section>
@@ -75,8 +83,8 @@
     </div>
     <div class="empty-state" id="empty-state" style="display:none;">
       <div class="empty-icon">🔍</div>
-      <h3>Sin resultados</h3>
-      <p>Prueba con otro nombre o filtro</p>
+      <h3 data-i18n="empty-title">Sin resultados</h3>
+      <p data-i18n="empty-desc">Prueba con otro nombre o filtro</p>
     </div>
   </main>
 
@@ -96,10 +104,10 @@
         <div class="avatar-picker">
           <div class="avatar-preview" id="avatar-preview">?</div>
           <div class="avatar-info">
-            <span>Foto del Jugador</span>
-            <small>Sube un archivo de imagen o introduce una URL</small>
+            <span data-i18n="form-photo-title">Foto del Jugador</span>
+            <small data-i18n="form-photo-desc">Sube un archivo de imagen o introduce una URL</small>
             <div class="avatar-upload-inputs">
-              <label for="f-foto-file" class="btn-upload-file">
+              <label for="f-foto-file" class="btn-upload-file" data-i18n="form-photo-upload">
                 📁 Subir foto
               </label>
               <input type="file" id="f-foto-file" accept="image/*" />
@@ -110,100 +118,100 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="f-nombre">Nombre *</label>
+            <label for="f-nombre" data-i18n="form-name">Nombre *</label>
             <input type="text" id="f-nombre" placeholder="Ej: Iker" required />
           </div>
           <div class="form-group">
-            <label for="f-apellido">Apellidos *</label>
+            <label for="f-apellido" data-i18n="form-lastname">Apellidos *</label>
             <input type="text" id="f-apellido" placeholder="Ej: Muniain" required />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="f-dorsal">Dorsal *</label>
+            <label for="f-dorsal" data-i18n="form-number">Dorsal *</label>
             <input type="number" id="f-dorsal" min="1" max="99" placeholder="10" required />
           </div>
           <div class="form-group">
-            <label for="f-posicion">Posición *</label>
+            <label for="f-posicion" data-i18n="form-position">Posición *</label>
             <select id="f-posicion" required>
-              <option value="">Selecciona…</option>
-              <option value="Portero">Portero</option>
-              <option value="Defensa">Defensa</option>
-              <option value="Centrocampista">Centrocampista</option>
-              <option value="Delantero">Delantero</option>
+              <option value="" data-i18n="form-select-prompt">Selecciona…</option>
+              <option value="Portero" data-i18n="pos-Portero">Portero</option>
+              <option value="Defensa" data-i18n="pos-Defensa">Defensa</option>
+              <option value="Centrocampista" data-i18n="pos-Centrocampista">Centrocampista</option>
+              <option value="Delantero" data-i18n="pos-Delantero">Delantero</option>
             </select>
           </div>
         </div>
 
         <div class="form-row three-cols">
           <div class="form-group">
-            <label for="f-edad">Edad</label>
+            <label for="f-edad" data-i18n="form-age">Edad</label>
             <input type="number" id="f-edad" min="15" max="45" placeholder="25" />
           </div>
           <div class="form-group">
-            <label for="f-nacionalidad">Nacionalidad</label>
+            <label for="f-nacionalidad" data-i18n="form-nationality">Nacionalidad</label>
             <input type="text" id="f-nacionalidad" placeholder="Española" />
           </div>
           <div class="form-group">
-            <label for="f-talla">Talla</label>
+            <label for="f-talla" data-i18n="form-size">Talla</label>
             <input type="text" id="f-talla" placeholder="Ej: M, L, 42" />
           </div>
         </div>
 
         <div class="form-row three-cols">
           <div class="form-group">
-            <label for="f-goles">Goles</label>
+            <label for="f-goles" data-i18n="form-goals">Goles</label>
             <input type="number" id="f-goles" min="0" value="0" />
           </div>
           <div class="form-group">
-            <label for="f-asistencias">Asistencias</label>
+            <label for="f-asistencias" data-i18n="form-assists">Asistencias</label>
             <input type="number" id="f-asistencias" min="0" value="0" />
           </div>
           <div class="form-group">
-            <label for="f-partidos">Partidos</label>
+            <label for="f-partidos" data-i18n="form-matches">Partidos</label>
             <input type="number" id="f-partidos" min="0" value="0" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="f-val">Valoración *</label>
+            <label for="f-val" data-i18n="form-rating">Valoración *</label>
             <select id="f-val" required>
-              <option value="5" selected>⭐⭐⭐⭐⭐ (5 - Excelente)</option>
-              <option value="4">⭐⭐⭐⭐ (4 - Bueno)</option>
-              <option value="3">⭐⭐⭐ (3 - Regular)</option>
-              <option value="2">⭐⭐ (2 - Bajo)</option>
-              <option value="1">⭐ (1 - Muy Bajo)</option>
+              <option value="5" selected data-i18n="rate-5">⭐⭐⭐⭐⭐ (5 - Excelente)</option>
+              <option value="4" data-i18n="rate-4">⭐⭐⭐⭐ (4 - Bueno)</option>
+              <option value="3" data-i18n="rate-3">⭐⭐⭐ (3 - Regular)</option>
+              <option value="2" data-i18n="rate-2">⭐⭐ (2 - Bajo)</option>
+              <option value="1" data-i18n="rate-1">⭐ (1 - Muy Bajo)</option>
             </select>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group full">
-            <label for="f-estado">Estado</label>
+            <label for="f-estado" data-i18n="form-status">Estado</label>
             <div class="radio-group">
               <label class="radio-label">
                 <input type="radio" name="estado" value="Activo" checked id="f-estado-activo" />
-                <span class="radio-dot activo"></span> Activo
+                <span class="radio-dot activo"></span> <span data-i18n="status-Activo">Activo</span>
               </label>
               <label class="radio-label">
                 <input type="radio" name="estado" value="Lesionado" id="f-estado-lesionado" />
-                <span class="radio-dot lesionado"></span> Lesionado
+                <span class="radio-dot lesionado"></span> <span data-i18n="status-Lesionado">Lesionado</span>
               </label>
               <label class="radio-label">
                 <input type="radio" name="estado" value="Sancionado" id="f-estado-sancionado" />
-                <span class="radio-dot sancionado"></span> Sancionado
+                <span class="radio-dot sancionado"></span> <span data-i18n="status-Sancionado">Sancionado</span>
               </label>
             </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn-cancel" id="btn-cancel">Cancelar</button>
+          <button type="button" class="btn-cancel" id="btn-cancel" data-i18n="btn-cancel">Cancelar</button>
           <button type="submit" class="btn-save" id="btn-save">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Guardar
+            <span data-i18n="btn-save">Guardar</span>
           </button>
         </div>
       </form>

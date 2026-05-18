@@ -62,7 +62,7 @@ const PLAYERS_DEFAULT = [
 ];
 
 // ────────────────────────────────────────────────
-// 2. STATE
+// 2. STATE & TRANSLATIONS
 // ────────────────────────────────────────────────
 let players   = [];
 let nextId    = 21;
@@ -71,6 +71,343 @@ let searchQuery  = '';
 let sortBy       = 'dorsal';
 let editingId    = null;
 let tempFotoUrl  = null;
+
+// i18n Translation Dictionary (Spanish, Basque, and English)
+const TRANSLATIONS = {
+  es: {
+    // Header
+    'logo-subtitle': 'Athletic Team · Temporada 2025/26',
+    'stat-players': 'Jugadores',
+    'stat-active': 'Activos',
+    'stat-goals': 'Goles',
+    'btn-add': 'Añadir Jugador',
+    // Filters
+    'search-placeholder': 'Buscar jugador…',
+    'filter-all': 'Todos',
+    'filter-portero': 'Portero',
+    'filter-defensa': 'Defensa',
+    'filter-centrocampista': 'Centrocampista',
+    'filter-delantero': 'Delantero',
+    'sort-dorsal': 'Ordenar: Dorsal',
+    'sort-nombre': 'Ordenar: Nombre',
+    'sort-goles': 'Ordenar: Goles',
+    'sort-edad': 'Ordenar: Edad',
+    'sort-val': 'Ordenar: Valoración',
+    // Empty state
+    'empty-title': 'Sin resultados',
+    'empty-desc': 'Prueba con otro nombre o filtro',
+    // Card Stats & Actions
+    'card-goals': 'Goles',
+    'card-assists': 'Asist.',
+    'card-matches': 'Partidos',
+    'card-age': 'Edad',
+    'card-edit': 'Editar',
+    'card-delete': 'Eliminar',
+    // Form Modals
+    'modal-title-new': 'Nuevo Jugador',
+    'modal-title-edit': 'Editar Jugador',
+    'form-photo-title': 'Foto del Jugador',
+    'form-photo-desc': 'Sube un archivo de imagen o introduce una URL',
+    'form-photo-upload': '📁 Subir foto',
+    'form-photo-placeholder': 'O pega URL de la imagen...',
+    'form-name': 'Nombre *',
+    'form-name-placeholder': 'Ej: Iker',
+    'form-lastname': 'Apellidos *',
+    'form-lastname-placeholder': 'Ej: Muniain',
+    'form-number': 'Dorsal *',
+    'form-position': 'Posición *',
+    'form-select-prompt': 'Selecciona…',
+    'form-age': 'Edad',
+    'form-nationality': 'Nacionalidad',
+    'form-nationality-placeholder': 'Española',
+    'form-size': 'Talla',
+    'form-size-placeholder': 'Ej: M, L, 42',
+    'form-goals': 'Goles',
+    'form-assists': 'Asistencias',
+    'form-matches': 'Partidos',
+    'form-rating': 'Valoración *',
+    'form-status': 'Estado',
+    'btn-cancel': 'Cancelar',
+    'btn-save': 'Guardar',
+    // Positions mapping
+    'pos-Portero': 'Portero',
+    'pos-Defensa': 'Defensa',
+    'pos-Centrocampista': 'Centrocampista',
+    'pos-Delantero': 'Delantero',
+    // Status mapping
+    'status-Activo': 'Activo',
+    'status-Lesionado': 'Lesionado',
+    'status-Sancionado': 'Sancionado',
+    // Ratings
+    'rate-5': '⭐⭐⭐⭐⭐ (5 - Excelente)',
+    'rate-4': '⭐⭐⭐⭐ (4 - Bueno)',
+    'rate-3': '⭐⭐⭐ (3 - Regular)',
+    'rate-2': '⭐⭐ (2 - Bajo)',
+    'rate-1': '⭐ (1 - Muy Bajo)',
+    // Detail Modal
+    'detail-dorsal': 'Dorsal',
+    'detail-age': 'Edad',
+    'detail-years': 'años',
+    'detail-nationality': 'Nacionalidad',
+    'detail-status': 'Estado',
+    'detail-size': 'Talla',
+    'detail-id': 'Ficha ID',
+    'detail-goals': 'Goles',
+    'detail-assists': 'Asistencias',
+    'detail-matches': 'Partidos',
+    // Toast & Confirm
+    'toast-required': 'Completa los campos obligatorios',
+    'toast-updated': '✅ Jugador actualizado',
+    'toast-added': '✅ Jugador añadido',
+    'toast-deleted': '🗑️ Jugador eliminado',
+    'toast-sync-ok': '✅ Sincronizado con Supabase',
+    'toast-sync-err': '⚠️ Error al sincronizar con Supabase',
+    'toast-upload-start': '📤 Subiendo imagen a Storage...',
+    'toast-upload-ok': '✅ Imagen subida a Storage',
+    'toast-upload-db': '⚠️ Usando almacenamiento en base de datos para la foto',
+    'toast-db-deleted': '🗑️ Eliminado de Supabase',
+    'confirm-delete': '¿Eliminar a {name}?',
+  },
+  eu: {
+    // Header
+    'logo-subtitle': 'Athletic Team · 2025/26 Denboraldia',
+    'stat-players': 'Jokalariak',
+    'stat-active': 'Aktiboak',
+    'stat-goals': 'Golak',
+    'btn-add': 'Jokalaria Gehitu',
+    // Filters
+    'search-placeholder': 'Bilatu jokalaria…',
+    'filter-all': 'Guztiak',
+    'filter-portero': 'Atezaina',
+    'filter-defensa': 'Defentsa',
+    'filter-centrocampista': 'Erdilaria',
+    'filter-delantero': 'Aurrelaria',
+    'sort-dorsal': 'Ordenatu: Dorsala',
+    'sort-nombre': 'Ordenatu: Izena',
+    'sort-goles': 'Ordenatu: Golak',
+    'sort-edad': 'Ordenatu: Adina',
+    'sort-val': 'Ordenatu: Balorazioa',
+    // Empty state
+    'empty-title': 'Emaitzarik ez',
+    'empty-desc': 'Saiatu beste izen edo iragazki batekin',
+    // Card Stats & Actions
+    'card-goals': 'Golak',
+    'card-assists': 'Asist.',
+    'card-matches': 'Partidak',
+    'card-age': 'Adina',
+    'card-edit': 'Editatu',
+    'card-delete': 'Ezabatu',
+    // Form Modals
+    'modal-title-new': 'Jokalari Berria',
+    'modal-title-edit': 'Jokalaria Editatu',
+    'form-photo-title': 'Jokalariaren Argazkia',
+    'form-photo-desc': 'Igo irudi fitxategi bat edo idatzi URL bat',
+    'form-photo-upload': '📁 Argazkia igo',
+    'form-photo-placeholder': 'Edo itsatsi irudiaren URLa...',
+    'form-name': 'Izena *',
+    'form-name-placeholder': 'Adib: Iker',
+    'form-lastname': 'Abizenak *',
+    'form-lastname-placeholder': 'Adib: Muniain',
+    'form-number': 'Dorsala *',
+    'form-position': 'Posizioa *',
+    'form-select-prompt': 'Hautatu…',
+    'form-age': 'Adina',
+    'form-nationality': 'Nazionalitatea',
+    'form-nationality-placeholder': 'Euskalduna',
+    'form-size': 'Taila',
+    'form-size-placeholder': 'Adib: M, L, 42',
+    'form-goals': 'Golak',
+    'form-assists': 'Asistentziak',
+    'form-matches': 'Partidak',
+    'form-rating': 'Balorazioa *',
+    'form-status': 'Egoera',
+    'btn-cancel': 'Utzi',
+    'btn-save': 'Gorde',
+    // Positions mapping
+    'pos-Portero': 'Atezaina',
+    'pos-Defensa': 'Defentsa',
+    'pos-Centrocampista': 'Erdilaria',
+    'pos-Delantero': 'Aurrelaria',
+    // Status mapping
+    'status-Activo': 'Aktiboa',
+    'status-Lesionado': 'Zauritua',
+    'status-Sancionado': 'Zigorra',
+    // Ratings
+    'rate-5': '⭐⭐⭐⭐⭐ (5 - Bikaina)',
+    'rate-4': '⭐⭐⭐⭐ (4 - Ona)',
+    'rate-3': '⭐⭐⭐ (3 - Erregularra)',
+    'rate-2': '⭐⭐ (2 - Baxua)',
+    'rate-1': '⭐ (1 - Oso Baxua)',
+    // Detail Modal
+    'detail-dorsal': 'Dorsala',
+    'detail-age': 'Adina',
+    'detail-years': 'urte',
+    'detail-nationality': 'Nazionalitatea',
+    'detail-status': 'Egoera',
+    'detail-size': 'Taila',
+    'detail-id': 'Fitxa ID',
+    'detail-goals': 'Golak',
+    'detail-assists': 'Asistentziak',
+    'detail-matches': 'Partidak',
+    // Toast & Confirm
+    'toast-required': 'Bete beharreko eremuak osatu',
+    'toast-updated': '✅ Jokalaria eguneratu da',
+    'toast-added': '✅ Jokalaria gehitu da',
+    'toast-deleted': '🗑️ Jokalaria ezabatu da',
+    'toast-sync-ok': '✅ Supabase-rekin sinkronizatuta',
+    'toast-sync-err': '⚠️ Errorea Supabase-rekin sinkronizatzean',
+    'toast-upload-start': '📤 Irudia Storage-ra igotzen...',
+    'toast-upload-ok': '✅ Irudia igota Storage-ra',
+    'toast-upload-db': '⚠️ Datu baseko biltegia erabiltzen argazkirako',
+    'toast-db-deleted': '🗑️ Supabase-tik ezabatuta',
+    'confirm-delete': 'Ezabatu nahi duzu {name}?',
+  },
+  en: {
+    // Header
+    'logo-subtitle': 'Athletic Team · Season 2025/26',
+    'stat-players': 'Players',
+    'stat-active': 'Active',
+    'stat-goals': 'Goals',
+    'btn-add': 'Add Player',
+    // Filters
+    'search-placeholder': 'Search player…',
+    'filter-all': 'All',
+    'filter-portero': 'Goalkeeper',
+    'filter-defensa': 'Defender',
+    'filter-centrocampista': 'Midfielder',
+    'filter-delantero': 'Forward',
+    'sort-dorsal': 'Sort: Number',
+    'sort-nombre': 'Sort: Name',
+    'sort-goles': 'Sort: Goals',
+    'sort-edad': 'Sort: Age',
+    'sort-val': 'Sort: Rating',
+    // Empty state
+    'empty-title': 'No results',
+    'empty-desc': 'Try another name or filter',
+    // Card Stats & Actions
+    'card-goals': 'Goals',
+    'card-assists': 'Assists',
+    'card-matches': 'Matches',
+    'card-age': 'Age',
+    'card-edit': 'Edit',
+    'card-delete': 'Delete',
+    // Form Modals
+    'modal-title-new': 'New Player',
+    'modal-title-edit': 'Edit Player',
+    'form-photo-title': 'Player Photo',
+    'form-photo-desc': 'Upload an image file or enter a URL',
+    'form-photo-upload': '📁 Upload photo',
+    'form-photo-placeholder': 'Or paste image URL...',
+    'form-name': 'First Name *',
+    'form-name-placeholder': 'Ex: Iker',
+    'form-lastname': 'Last Name *',
+    'form-lastname-placeholder': 'Ex: Muniain',
+    'form-number': 'Number *',
+    'form-position': 'Position *',
+    'form-select-prompt': 'Select…',
+    'form-age': 'Age',
+    'form-nationality': 'Nationality',
+    'form-nationality-placeholder': 'Spanish',
+    'form-size': 'Size',
+    'form-size-placeholder': 'Ex: M, L, 42',
+    'form-goals': 'Goals',
+    'form-assists': 'Assists',
+    'form-matches': 'Matches',
+    'form-rating': 'Rating *',
+    'form-status': 'Status',
+    'btn-cancel': 'Cancel',
+    'btn-save': 'Save',
+    // Positions mapping
+    'pos-Portero': 'Goalkeeper',
+    'pos-Defensa': 'Defender',
+    'pos-Centrocampista': 'Midfielder',
+    'pos-Delantero': 'Forward',
+    // Status mapping
+    'status-Activo': 'Active',
+    'status-Lesionado': 'Injured',
+    'status-Sancionado': 'Suspended',
+    // Ratings
+    'rate-5': '⭐⭐⭐⭐⭐ (5 - Excellent)',
+    'rate-4': '⭐⭐⭐⭐ (4 - Good)',
+    'rate-3': '⭐⭐⭐ (3 - Average)',
+    'rate-2': '⭐⭐ (2 - Poor)',
+    'rate-1': '⭐ (1 - Very Poor)',
+    // Detail Modal
+    'detail-dorsal': 'Number',
+    'detail-age': 'Age',
+    'detail-years': 'years',
+    'detail-nationality': 'Nationality',
+    'detail-status': 'Status',
+    'detail-size': 'Size',
+    'detail-id': 'Player ID',
+    'detail-goals': 'Goals',
+    'detail-assists': 'Assists',
+    'detail-matches': 'Matches',
+    // Toast & Confirm
+    'toast-required': 'Complete the required fields',
+    'toast-updated': '✅ Player updated',
+    'toast-added': '✅ Player added',
+    'toast-deleted': '🗑️ Player deleted',
+    'toast-sync-ok': '✅ Synchronized with Supabase',
+    'toast-sync-err': '⚠️ Error synchronizing with Supabase',
+    'toast-upload-start': '📤 Uploading image to Storage...',
+    'toast-upload-ok': '✅ Image uploaded to Storage',
+    'toast-upload-db': '⚠️ Using database storage for the photo',
+    'toast-db-deleted': '🗑️ Deleted from Supabase',
+    'confirm-delete': 'Delete {name}?',
+  }
+};
+
+let currentLang = localStorage.getItem('ftm_lang') || 'es';
+
+function t(key, replacements = {}) {
+  const dict = TRANSLATIONS[currentLang] || TRANSLATIONS.es;
+  let text = dict[key] || TRANSLATIONS.es[key] || key;
+  Object.keys(replacements).forEach(placeholder => {
+    text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+  });
+  return text;
+}
+
+function translatePosition(pos) {
+  return t(`pos-${pos}`);
+}
+
+function translateStatus(status) {
+  return t(`status-${status}`);
+}
+
+function updateLanguageUI() {
+  // Translate static text nodes with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+
+  // Translate placeholders
+  document.getElementById('search-input').placeholder = t('search-placeholder');
+  document.getElementById('f-foto').placeholder = t('form-photo-placeholder');
+  document.getElementById('f-nombre').placeholder = t('form-name-placeholder');
+  document.getElementById('f-apellido').placeholder = t('form-lastname-placeholder');
+  document.getElementById('f-nacionalidad').placeholder = t('form-nationality-placeholder');
+  document.getElementById('f-talla').placeholder = t('form-size-placeholder');
+
+  // Update language buttons active state
+  document.querySelectorAll('.btn-lang').forEach(btn => {
+    if (btn.dataset.lang === currentLang) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('ftm_lang', lang);
+  updateLanguageUI();
+  renderPlayers();
+}
 
 // ────────────────────────────────────────────────
 // 3. STORAGE
@@ -187,25 +524,25 @@ function renderPlayers() {
       <div class="card-body">
         <div class="card-name">${p.nombre} ${p.apellido}</div>
         <div class="card-meta">
-          <span class="badge-posicion ${getBadgePosClass(p.posicion)}">${p.posicion}</span>
-          <span class="badge-estado estado-${p.estado}">${p.estado}</span>
+          <span class="badge-posicion ${getBadgePosClass(p.posicion)}">${translatePosition(p.posicion)}</span>
+          <span class="badge-estado estado-${p.estado}">${translateStatus(p.estado)}</span>
           <span class="badge-val">⭐ ${p.val || 5}</span>
         </div>
         <div class="card-stats">
-          <div class="cs-item"><span class="cs-num">${p.goles}</span><span class="cs-label">Goles</span></div>
-          <div class="cs-item"><span class="cs-num">${p.asistencias}</span><span class="cs-label">Asist.</span></div>
-          <div class="cs-item"><span class="cs-num">${p.partidos}</span><span class="cs-label">Partidos</span></div>
-          <div class="cs-item"><span class="cs-num">${p.edad ?? '—'}</span><span class="cs-label">Edad</span></div>
+          <div class="cs-item"><span class="cs-num">${p.goles}</span><span class="cs-label">${t('card-goals')}</span></div>
+          <div class="cs-item"><span class="cs-num">${p.asistencias}</span><span class="cs-label">${t('card-assists')}</span></div>
+          <div class="cs-item"><span class="cs-num">${p.partidos}</span><span class="cs-label">${t('card-matches')}</span></div>
+          <div class="cs-item"><span class="cs-num">${p.edad ?? '—'}</span><span class="cs-label">${t('card-age')}</span></div>
         </div>
       </div>
       <div class="card-actions">
         <button class="card-btn edit" data-action="edit" data-id="${p.id}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Editar
+          ${t('card-edit')}
         </button>
         <button class="card-btn delete" data-action="delete" data-id="${p.id}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-          Eliminar
+          ${t('card-delete')}
         </button>
       </div>
     `;
@@ -267,7 +604,7 @@ async function uploadPhotoToSupabase(playerId, file) {
 
 function openAdd() {
   editingId = null;
-  modalTitle.textContent = 'Nuevo Jugador';
+  modalTitle.textContent = t('modal-title-new');
   playerForm.reset();
   document.getElementById('player-id').value = '';
   document.getElementById('f-foto').value = '';
@@ -285,7 +622,7 @@ function openEdit(id) {
   const p = players.find(x => x.id === id);
   if (!p) return;
   editingId = id;
-  modalTitle.textContent = 'Editar Jugador';
+  modalTitle.textContent = t('modal-title-edit');
   document.getElementById('player-id').value   = p.id;
   document.getElementById('f-nombre').value    = p.nombre;
   document.getElementById('f-apellido').value  = p.apellido;
@@ -379,7 +716,7 @@ document.getElementById('f-foto').addEventListener('input', e => {
 
 playerForm.addEventListener('submit', async e => {
   e.preventDefault();
-  if (!validateForm()) { showToast('Completa los campos obligatorios', 'error'); return; }
+  if (!validateForm()) { showToast(t('toast-required'), 'error'); return; }
 
   const isNew = !editingId;
   const id = editingId || nextId++;
@@ -390,13 +727,13 @@ playerForm.addEventListener('submit', async e => {
 
   // If there's a file selected and we are connected to Supabase, try uploading it to Storage
   if (file && supabaseClient) {
-    showToast('📤 Subiendo imagen a Storage...', 'info');
+    showToast(t('toast-upload-start'), 'info');
     const uploadedUrl = await uploadPhotoToSupabase(id, file);
     if (uploadedUrl) {
       finalFotoUrl = uploadedUrl;
-      showToast('✅ Imagen subida a Storage', 'success');
+      showToast(t('toast-upload-ok'), 'success');
     } else {
-      showToast('⚠️ Usando almacenamiento en base de datos para la foto', 'warning');
+      showToast(t('toast-upload-db'), 'warning');
     }
   }
 
@@ -420,10 +757,10 @@ playerForm.addEventListener('submit', async e => {
   if (editingId) {
     const idx = players.findIndex(p => p.id === editingId);
     if (idx !== -1) players[idx] = player;
-    showToast('✅ Jugador actualizado', 'success');
+    showToast(t('toast-updated'), 'success');
   } else {
     players.push(player);
-    showToast('✅ Jugador añadido', 'success');
+    showToast(t('toast-added'), 'success');
   }
 
   saveToStorage();
@@ -456,9 +793,9 @@ playerForm.addEventListener('submit', async e => {
         .then(({ error }) => {
           if (error) {
             console.error('Error al guardar en Supabase:', error);
-            showToast('⚠️ Error al sincronizar con Supabase', 'error');
+            showToast(t('toast-sync-err'), 'error');
           } else {
-            showToast('✅ Sincronizado con Supabase', 'success');
+            showToast(t('toast-sync-ok'), 'success');
           }
         });
     } else {
@@ -469,9 +806,9 @@ playerForm.addEventListener('submit', async e => {
         .then(({ error }) => {
           if (error) {
             console.error('Error al actualizar en Supabase:', error);
-            showToast('⚠️ Error al sincronizar con Supabase', 'error');
+            showToast(t('toast-sync-err'), 'error');
           } else {
-            showToast('✅ Cambios guardados en Supabase', 'success');
+            showToast(t('toast-sync-ok'), 'success');
           }
         });
     }
@@ -484,12 +821,12 @@ playerForm.addEventListener('submit', async e => {
 function deletePlayer(id) {
   const p = players.find(x => x.id === id);
   if (!p) return;
-  if (!confirm(`¿Eliminar a ${p.nombre} ${p.apellido}?`)) return;
+  if (!confirm(t('confirm-delete', { name: `${p.nombre} ${p.apellido}` }))) return;
   
   players = players.filter(x => x.id !== id);
   saveToStorage();
   renderPlayers();
-  showToast('🗑️ Jugador eliminado');
+  showToast(t('toast-deleted'));
 
   // Eliminar en Supabase
   if (supabaseClient) {
@@ -500,9 +837,9 @@ function deletePlayer(id) {
       .then(({ error }) => {
         if (error) {
           console.error('Error al eliminar en Supabase:', error);
-          showToast('⚠️ Error al eliminar en Supabase', 'error');
+          showToast(t('toast-sync-err'), 'error');
         } else {
-          showToast('🗑️ Eliminado de Supabase', 'success');
+          showToast(t('toast-db-deleted'), 'success');
         }
       });
   }
@@ -536,50 +873,50 @@ function openDetail(id) {
     <div class="detail-body">
       <div class="detail-name">${p.nombre} ${p.apellido}</div>
       <div class="detail-badges">
-        <span class="badge-posicion ${getBadgePosClass(p.posicion)}">${p.posicion}</span>
-        <span class="badge-estado estado-${p.estado}">${p.estado}</span>
+        <span class="badge-posicion ${getBadgePosClass(p.posicion)}">${translatePosition(p.posicion)}</span>
+        <span class="badge-estado estado-${p.estado}">${translateStatus(p.estado)}</span>
         <span class="badge-val" style="background: rgba(255, 200, 66, 0.2); color: var(--yellow); font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
           ${'★'.repeat(p.val || 5)}${'☆'.repeat(5 - (p.val || 5))}
         </span>
       </div>
       <div class="detail-info-grid">
         <div class="detail-info-item">
-          <div class="label">Dorsal</div>
+          <div class="label">${t('detail-dorsal')}</div>
           <div class="value">#${p.dorsal}</div>
         </div>
         <div class="detail-info-item">
-          <div class="label">Edad</div>
-          <div class="value">${p.edad ? p.edad + ' años' : '—'}</div>
+          <div class="label">${t('detail-age')}</div>
+          <div class="value">${p.edad ? p.edad + ' ' + t('detail-years') : '—'}</div>
         </div>
         <div class="detail-info-item">
-          <div class="label">Nacionalidad</div>
+          <div class="label">${t('detail-nationality')}</div>
           <div class="value">${p.nacionalidad || '—'}</div>
         </div>
         <div class="detail-info-item">
-          <div class="label">Estado</div>
-          <div class="value">${p.estado}</div>
+          <div class="label">${t('detail-status')}</div>
+          <div class="value">${translateStatus(p.estado)}</div>
         </div>
         <div class="detail-info-item">
-          <div class="label">Talla</div>
+          <div class="label">${t('detail-size')}</div>
           <div class="value">${p.talla || '—'}</div>
         </div>
         <div class="detail-info-item">
-          <div class="label">Ficha ID</div>
+          <div class="label">${t('detail-id')}</div>
           <div class="value">#${p.id}</div>
         </div>
       </div>
       <div class="detail-stats-row">
         <div class="dsr-item">
           <div class="dsr-num">${p.goles}</div>
-          <div class="dsr-label">Goles</div>
+          <div class="dsr-label">${t('detail-goals')}</div>
         </div>
         <div class="dsr-item">
           <div class="dsr-num">${p.asistencias}</div>
-          <div class="dsr-label">Asistencias</div>
+          <div class="dsr-label">${t('detail-assists')}</div>
         </div>
         <div class="dsr-item">
           <div class="dsr-num">${p.partidos}</div>
-          <div class="dsr-label">Partidos</div>
+          <div class="dsr-label">${t('detail-matches')}</div>
         </div>
       </div>
     </div>
@@ -657,9 +994,16 @@ function showToast(msg, type = '') {
 // ────────────────────────────────────────────────
 (function init() {
   loadFromStorage();
+  updateLanguageUI();
   renderPlayers();
   updateHeaderStats();
   if (supabaseClient) {
     fetchPlayersFromSupabase();
   }
+  // Bind language switching button events
+  document.querySelectorAll('.btn-lang').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setLanguage(btn.dataset.lang);
+    });
+  });
 })();
